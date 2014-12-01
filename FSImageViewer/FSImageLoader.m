@@ -25,6 +25,7 @@
 #import <EGOCache/EGOCache.h>
 #import "FSImageLoader.h"
 #import "AFHTTPRequestOperation.h"
+#import "FSImage.h"
 
 @implementation FSImageLoader {
     NSMutableArray *runningRequests;
@@ -68,43 +69,63 @@
     }
 }
 
-- (void)loadImageForURL:(NSURL *)aURL image:(void (^)(UIImage *image, NSError *error))imageBlock {
-
+- (void)loadImage:(id<FSImage>)basicImage completed:(void (^)(UIImage *image, NSError *error))imageBlock {
+    UIImage *anImage = nil;
+    NSURL* aURL = basicImage.URL;
+    NSString *cacheKey = [NSString stringWithFormat:@"FSImageLoader-%lu", (unsigned long)[[aURL description] hash]];
+    
     if (!aURL) {
         NSError *error = [NSError errorWithDomain:@"de.felixschulze.fsimageloader" code:412 userInfo:@{
                 NSLocalizedDescriptionKey : @"You must set a url"
         }];
         imageBlock(nil, error);
     };
-    NSString *cacheKey = [NSString stringWithFormat:@"FSImageLoader-%lu", (unsigned long)[[aURL description] hash]];
-
-    UIImage *anImage = [[EGOCache globalCache] imageForKey:cacheKey];
-
+    
+    if (basicImage.shouldBeCached) {
+        anImage = [[EGOCache globalCache] imageForKey:cacheKey];
+    }
+    
     if (anImage) {
         if (imageBlock) {
             imageBlock(anImage, nil);
         }
-    }
-    else {
+    } else {
         [self cancelRequestForUrl:aURL];
 
-        NSURLRequest *urlRequest = [[NSURLRequest alloc] initWithURL:aURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:_timeoutInterval];
+        NSURLRequest *urlRequest = nil;
+        if (basicImage.shouldBeCached) {
+            urlRequest = [[NSURLRequest alloc] initWithURL:aURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:_timeoutInterval];
+        } else {
+            urlRequest = [[NSURLRequest alloc] initWithURL:aURL cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:_timeoutInterval];
+        }
         AFHTTPRequestOperation *imageRequestOperation = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
         imageRequestOperation.responseSerializer = [AFImageResponseSerializer serializer];
         [runningRequests addObject:imageRequestOperation];
         __weak AFHTTPRequestOperation *imageRequestOperationForBlock = imageRequestOperation;
 
+        if (!basicImage.shouldBeCached) {
+            // DISABLE CACHE //
+            [imageRequestOperation setCacheResponseBlock:^NSCachedURLResponse *(NSURLConnection *connection, NSCachedURLResponse *cachedResponse) {
+                return nil;
+            }];
+        }
+        
         [imageRequestOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
             UIImage *image = responseObject;
-            [[EGOCache globalCache] setImage:image forKey:cacheKey];
+            if (basicImage.shouldBeCached) {
+                [[EGOCache globalCache] setImage:image forKey:cacheKey];
+            }
+            
             if (imageBlock) {
                 imageBlock(image, nil);
             }
+            
             [runningRequests removeObject:imageRequestOperationForBlock];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             if (imageBlock) {
                 imageBlock(nil, error);
             }
+            
             [runningRequests removeObject:imageRequestOperationForBlock];
         }];
         [imageRequestOperation start];

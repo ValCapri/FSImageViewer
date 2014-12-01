@@ -24,6 +24,8 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol FSImage;
+
 /// Download remote images with AFNetworking
 @interface FSImageLoader : NSObject
 
@@ -36,7 +38,7 @@
 /// Download remote images from url
 /// @param url remote image url
 /// @param imageBlock block for image or error
-- (void)loadImageForURL:(NSURL *)url image:(void (^)(UIImage *image, NSError *error))imageBlock;
+- (void)loadImage:(id<FSImage>)basicImage completed:(void (^)(UIImage *image, NSError *error))imageBlock;
 
 /// Cancel all image requests
 - (void)cancelAllRequests;

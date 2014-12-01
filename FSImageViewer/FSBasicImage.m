@@ -31,32 +31,49 @@
 @synthesize size = _size;
 @synthesize image = _image;
 @synthesize failed = _failed;
+@synthesize shouldBeCached = _shouldBeCached;
 
-- (id)initWithImageURL:(NSURL *)aURL name:(NSString *)aName image:(UIImage *)aImage {
+- (id)initWithImageURL:(NSURL *)aURL name:(NSString *)aName image:(UIImage *)aImage shouldBeCached:(BOOL)shouldBeCached {
     self = [super init];
     if (self) {
         _URL = aURL;
         _title = aName;
+        _shouldBeCached = shouldBeCached;
         self.image = aImage;
-        
     }
     return self;
 }
 
 - (id)initWithImageURL:(NSURL *)aURL name:(NSString *)aName {
-    return [self initWithImageURL:aURL name:aName image:nil];
+    return [self initWithImageURL:aURL name:aName image:nil shouldBeCached:true];
 }
 
 - (id)initWithImageURL:(NSURL *)aURL {
-    return [self initWithImageURL:aURL name:nil image:nil];
+    return [self initWithImageURL:aURL name:nil image:nil shouldBeCached:true];
+}
+
+- (id)initWithImageURL:(NSURL *)aURL name:(NSString *)aName shouldBeCached:(BOOL)shouldBeCached {
+    return [self initWithImageURL:aURL name:aName image:nil shouldBeCached:shouldBeCached];
+}
+
+- (id)initWithImageURL:(NSURL *)aURL shouldBeCached:(BOOL)shouldBeCached {
+    return [self initWithImageURL:aURL name:nil image:nil shouldBeCached:shouldBeCached];
 }
 
 - (id)initWithImage:(UIImage *)aImage {
-    return [self initWithImageURL:nil name:nil image:aImage];
+    return [self initWithImageURL:nil name:nil image:aImage shouldBeCached:true];
 }
 
 - (id)initWithImage:(UIImage *)aImage name:(NSString *)aName {
-    return [self initWithImageURL:nil name:aName image:aImage];
+    return [self initWithImageURL:nil name:aName image:aImage shouldBeCached:true];
+}
+
+- (id)initWithImage:(UIImage *)aImage shouldBeCached:(BOOL)shouldBeCached {
+    return [self initWithImageURL:nil name:nil image:aImage shouldBeCached:shouldBeCached];
+}
+
+- (id)initWithImage:(UIImage *)aImage name:(NSString *)aName shouldBeCached:(BOOL)shouldBeCached {
+    return [self initWithImageURL:nil name:aName image:aImage shouldBeCached:shouldBeCached];
 }
 
 @end

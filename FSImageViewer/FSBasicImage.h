@@ -34,6 +34,15 @@
 /// @param URL remote image URL
 - (id)initWithImageURL:(NSURL *)URL;
 
+/// @param URL remote image URL
+/// @param name title of the image
+/// @param BOOL should be cached
+- (id)initWithImageURL:(NSURL *)URL name:(NSString *)name shouldBeCached:(BOOL)shouldBeCached;
+
+/// @param URL remote image URL
+/// @param BOOL should be cached
+- (id)initWithImageURL:(NSURL *)URL shouldBeCached:(BOOL)shouldBeCached;
+
 /// @param image an UIImage representation of the image
 - (id)initWithImage:(UIImage *)image;
 

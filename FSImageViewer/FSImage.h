@@ -35,5 +35,7 @@
 @property(strong, nonatomic) UIImage *image;
 /// true if the image download failed.
 @property(assign, nonatomic, getter=didFail) BOOL failed;
+/// false if you don't want to cache (dafault should be YES)
+@property(assign, nonatomic) BOOL shouldBeCached;
 
 @end
